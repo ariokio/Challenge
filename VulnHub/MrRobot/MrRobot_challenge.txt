@@ -1,9 +1,6 @@
 Vulhub :
 https://www.vulnhub.com/entry/mr-robot-1,151/
 
-Writeup :
-https://securitybytes.io/mr-robot-a-vulnerable-vm-story-f18ac952c9df
-
 
 Phase 1 : information gathering récolte d'information :
 
