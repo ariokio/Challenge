@@ -1,0 +1,90 @@
+omgpassword ==> level1
+
+allez dans /levels/ et lancer :
+
+./level1 omgpassword
+
+ensuite retour sur /home/level2
+ls -la
+.pass <== c lui !!!
+
+sh-3.1$ cd /home/level2
+sh-3.1$ ls -la
+total 28
+dr-xr-xr-x  2 level2 level2  4096 Nov 24 15:12 .
+drwxr-xr-x 17 root   root    4096 Nov 22 03:23 ..
+----------  1 level2 level2     1 Nov 16 18:04 .bash_history
+-r--------  1 level2 level2     9 Jul 19 17:20 .pass
+-rw-r--r--  1 level2 level2 11939 Dec 23 01:24 tags
+sh-3.1$ strings .pass
+
+
+retourner dans /levels
+
+./level2
+
+lire la phrase :
+Append the 39th through 42nd numbers in the sequence as a string and feed it to this binary via argv[1]. 1, 2, 3, 5, 8, 13, 21...
+The 4th through the 7th numbers would give you 581321
+
+url :http://www.zoneflash.net/tutoriaux/t001.php
+en fait c'est la suite de fibonacci, donc .....
+algo :
+
+
+solution :
+./level2 102334155165580141267914296433494437
+
+
+sh-3.1$ cd ../level
+level1/  level11/ level2/  level4/  level6/  level8/
+level10/ level12/ level3/  level5/  level7/  level9/
+sh-3.1$ cd ../level3
+sh-3.1$ ls -la
+total 16
+dr-xr-xr-x  2 level3 level3 4096 Nov 24 15:12 .
+drwxr-xr-x 17 root   root   4096 Nov 22 03:23 ..
+-r--------  1 level3 level3    9 Jul 19 17:20 .pass
+-rw-r--r--  1 level3 level3  560 Dec 22 10:01 tags
+
+sh-3.1$ strings .pass
+duf2dido
+
+
+sh-3.1$ su - level3
+Password:
+level3@io:~$ id
+uid=1003(level3) gid=1003(level3) groups=1003(level3)
+
+
+level3@io:/levels$ ./level3 level3.c
+Address of hmm: 0x804847f
+
+
+level3@io:/levels$ strings level3.c
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+int good(int addr) {
+        printf("Address of hmm: %p\n", addr);
+int hmm() {
+        printf("Win.\n");
+        execl("/bin/sh", "sh", NULL);
+extern char **environ;
+int main(int argc, char **argv) {
+        int i, limit;
+        for(i = 0; environ[i] != NULL; i++)
+        memset(environ[i], 0x00, strlen(environ[i]));
+        int (*fptr)(int) = good;
+        char buf[32];
+        if(strlen(argv[1]) <= 40) limit = strlen(argv[1]);
+        for(i = 0; i <= limit; i++) {
+                buf[i] = argv[1][i];
+                if(i < 36) buf[i] = 0x41;
+        int (*hmmptr)(int) = hmm;
+        (*fptr)((int)hmmptr);
+        return 0;
+level3@io:/levels$
+
+
+

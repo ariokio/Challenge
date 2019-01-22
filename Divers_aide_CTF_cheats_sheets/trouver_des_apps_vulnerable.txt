@@ -1,0 +1,4 @@
+chercher dans http://www.exploit-db.com/exploits/ pour trouver des exploits ensuite cliquer quand c'est possible sur "Vulnerable App:"
+vous pouvez soit mettre l'appli dasn un windows ou dans un linux suivant l'os.
+Sinon via google faire une recherche comme ça :
+dans la recherche taper "site:http://www.exploit-db.com/exploits/ windows +2014" par exemple...

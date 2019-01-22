@@ -1,0 +1,3 @@
+
+
+python -m SimpleHTTPServer & ncat --ssl -l 8443 --sh-exec "ncat 127.0.0.1 8000" --keep-open

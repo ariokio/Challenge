@@ -1,0 +1,93 @@
+Méthodes pour quitter vi :
+
+- :q quitte vi si le tampon n'a subi aucune modification.
+- :q! quitte vi et abandonne toutes les modifications du tampon depuis sa dernière sauvegarde.
+- :wq, :x ou ZZ Sauvegarde le tampon dans le fichier de travail avant de sortir. 
+
+Annuler une commande :
+
+- u anule les modification ou commande précèdament utiliser.
+
+Commandes pour enregistrer et écrire un fichier :
+
+- :w écris le tampon (enregistre) dans le fichier que "vi" est en train d'éditer.
+- :w nomfichier écris le tampon (enregistre) dans le fichier nommé.
+- :w! impose à vi d'écraser le fichier existant.
+
+Touche de déplacement du curseur :
+
+- les flèches
+- Page Up, Page Down
+- Barre d'espace et, ou l : déplce le curseur d'une position vers la droite.
+- Entrée et, ou + : permet de ce rendre au début de la ligne suivante; il existe aussi la touche j pour décendre d'une ligne toute en conservant la position du curseur dans la ligne.
+- Le signe - : permet de revenir au début de la ligne précédente; il existe aussi la touche k pour remonter d'une ligne toute en conservant la position du curseur dans la ligne.
+- La touche h : déplace le curseur d'un caractère vers la gauche.
+- La touche 0 (zéro) : permet d'aller au début d'une ligne.
+- La touche $ : permet d'aller en fin de ligne.
+- w : avance d'un mot. (ne pas confondre avec la touche d'enregistrement ":w")
+- b : déplace le curseur au début du mot courant.
+- e : déplace le curseur à la fin du mot courant.
+- Maj+h : permet de ce rendre directement à la première ligne de l'écran (position de départ).
+- Maj+m : permet d'atteindre la ligne qui ce trouve au milieu des lignes affichées.
+- Maj+l : permet d'atteindre la dernière ligne à l'écran.
+- Ctrl+f : vous fait avancez d'un écran.
+- Ctrl+b vous fait reculer d'un écran.
+- Maj+g : permet de vous rendre rapidement à la dernière ligne d'un fichier.
+- 1+Maj+g : permet de remonter jusqu'à la première ligne du fichier (En fait, pour vous déplacer vers une ligne spécifique du fichier, tapez le numéro de la linge avant d'appuyer sur Maj+g ; exemple, pour atteindre la ligne 35 du fichier appuyer sur 3+5+Maj+g.)
+
+Commandes d'ajout de texte :
+
+- a : ajoute du texte après le curseur.
+- i : insére du texte devant le curseur.
+- Maj+a : ajoute du texte à la fin de la ligne courante
+- Maj+i : insère du texte au début de la ligne courante.
+- o (la lettre o) : créé une ligne vide en dessous de la ligne courante (ligne au est positionner le curseur).
+- Maj+o : créé une ligne vide au-dessus de la ligne courante (ligne au est positionner le curseur).
+
+Commande de suppression de texte :
+
+- x : efface le cractère qui ce trouve à la position du curseur.
+- dw : efface le mot courant à partir de la position de votre curseur jusqu'au début du prochain mot.
+- d$ : efface à partir du curseur jusqu'à la fin de ligne.
+- Maj+d : c'est pareil que d$; efface le reste de la ligne courante.
+- dd : efface complètement la ligne courante, sans ce souciès de la position du curseur.
+
+Commande de recherche :
+
+- /recherche : recherche en avançant dans le fichier (vers la droite).
+- ?recherche : recherche en reculant dans le fichier (vers la gauche).
+- n : reprend la recherche dans la direction courante.
+- Maj+n : reprend la recherche dans la direction opposée.
+
+Commandes de modification et de remplacement :
+
+- r : remplace un seul caractères.
+- Maj+r : remplace une suite de caractères.
+- cw : modifie un mot (en partant de la droite).
+- ce : pareil que "cw"; modifie un mot (en partant de la droite).
+- cb : modifie un mot (en partant de la gauche).
+- c$ : modifie une ligne à partir de la position du curseur j'usqu'a la fin de la ligne.
+- Maj+c : pareil que "c$".
+- cc : modifie la ligne entière.
+
+Commande de copie et de collage :
+
+- p : colle le texte à droite du curseur.
+- Maj+p : colle le texte à gauche du curseur.
+- yw : copie un mot.
+- y$ : copie tout depuis la position du curseur jusqu'à la fin de la ligne.
+- Maj+y : pareil que "y$"
+- yy : copie toute la ligne.
+
+Fin
+
+
+
+
+
+
+
+
+
+
+
