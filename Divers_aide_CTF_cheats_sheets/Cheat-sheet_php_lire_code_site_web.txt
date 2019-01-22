@@ -1,3 +1,5 @@
+ATTENTION CECI est un brouillon, ça part dans tous les sens, je dois le remettre au propre....
+
 En faisant un pentest d'une VM de vulnhub :
 
 la VM : 10.0.1.216
