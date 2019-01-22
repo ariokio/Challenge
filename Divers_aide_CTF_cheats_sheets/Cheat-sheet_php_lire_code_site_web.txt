@@ -50,6 +50,12 @@ Checking http://10.0.1.216
 The site http://10.0.1.216 is behind a ModSecurity (OWASP CRS)
 Number of requests: 11
 
+Donc on va partir du principe que c'est un exercice sur l'evasion de OWASP CRS :
+https://medium.com/secjuice/waf-evasion-techniques-718026d693d8
+https://www.secjuice.com/web-application-firewall-waf-evasion/
+A lire sans tarder, au cas ou certain ne le savait pas encore.
+
+
 on decouvre l'url http://10.0.1.216/test.php?file=last.html, car on lit le code de la page qui est affichée
 root@debian-10:~/gitrepo# curl -s 'http://10.0.1.216/test.php?file=test.php'
 
